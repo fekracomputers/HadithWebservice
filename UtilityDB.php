@@ -8,7 +8,7 @@ class UtilityDB {
     private static $usersDB = NULL;
 
     /**
-     * @brief generate limit seaction of SQL statment
+     * @brief generate limit section of SQL statment
      */
     private static function genSQLLimit($start = -1, $limit = -1) {
         $SQLLimit = "";
