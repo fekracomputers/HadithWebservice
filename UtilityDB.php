@@ -8,7 +8,7 @@ class UtilityDB {
     private static $usersDB = NULL;
 
     /**
-     * @brief generate limit section of SQL statment
+     * @brief generate limit seaction of SQL statment
      */
     private static function genSQLLimit($start = -1, $limit = -1) {
         $SQLLimit = "";
@@ -588,17 +588,25 @@ class UtilityDB {
         $result = intval(UtilityDB::dbSQLVal($db, "SELECT count(*) FROM userspreferences WHERE email='$userEmail'"));
         if($result===0)
         {
-            return $db->query("INSERT INTO userspreferences(email, preferences) VALUES('$userEmail', '$userPreferenceList');");
+            $statement = $db->prepare("INSERT INTO userspreferences(email, preferences) VALUES(?, ?);");
+            $statement->bindParam(1, $userEmail, SQLITE3_TEXT);
+            $statement->bindParam(2, $userPreferenceList, SQLITE3_TEXT);
+            $result = $statement->execute();
         }
         else
         {
-            return $db->query("UPDATE userspreferences SET preferences = '$userPreferenceList' WHERE email = '$userEmail';");
+            $statement = $db->prepare("UPDATE userspreferences SET preferences = ? WHERE email = ?;");
+            $statement->bindParam(1, $userPreferenceList, SQLITE3_TEXT);
+            $statement->bindParam(2, $userEmail, SQLITE3_TEXT);
+            $result = $statement->execute();
         }
+        
+        return $result;
     }
     
     public static function loadUserPreference($userEmail)
     {
-        return UtilityDB::dbSQLVal(UtilityDB::getUsersDB(), "SELECT preferences FROM userspreferences WHERE email='$userEmail'");
+        return UtilityDB::dbSQLVal(UtilityDB::getUsersDB(), "SELECT preferences FROM userspreferences WHERE email='$userEmail'", false);
     }        
     
     public static function getSimilarWords($word, $limit = MAX_RESULT_COUNT)
@@ -609,6 +617,11 @@ class UtilityDB {
     public static function getOrgBooks($booksIDs = "") 
     {        
         return UtilityDB::dbSQLAssociative(UtilityDB::getMainDB(), "SELECT id, title FROM orgbooks WHERE id IN $booksIDs ORDER BY title;", false);
+    }
+    
+    public static function hasTafseer($bookID, $hadithID)
+    {
+        return UtilityDB::dbSQLVal(UtilityDB::getMainDB(), "SELECT count(*) FROM tafseer, (SELECT orgbookid, orgpageid FROM orghadith WHERE bookid = $bookID and hadithid = $hadithID) AS T WHERE tafseer.bookid = T.orgbookid AND tafseer.pageid = T.orgpageid;", false);
     }
 
     public static function getTafseer($bookID, $hadithID)

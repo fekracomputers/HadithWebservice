@@ -89,14 +89,6 @@ class WebService {
             $ofData = str_replace("[", "(", $ofData);
             $ofData = str_replace("]", ")", $ofData);
         }
-        else if($of=="mybooks")
-        {
-            $of = "books";
-            $ofData = UtilityDB::loadUserPreference("user@server.com");
-            $ofData = str_replace("[", "(", $ofData);
-            $ofData = str_replace("]", ")", $ofData);
-            //echo $ofData;
-        }
         else
         {
             return json_encode(array("response"=>0, "reason"=>MSG_INVALID_REQUEST_FORMAT));
@@ -183,9 +175,9 @@ class WebService {
         if($userEmail===false)
             return json_encode(array("response"=>0, "reason"=>MSG_INVALID_REQUEST_FORMAT));
 
-        $userPreferenceList = safeGetIntArray($input["userpreferencelist"], array());
-        $userPreferenceList = json_encode($userPreferenceList);
-
+        $userPreferenceList = $input["userpreferencelist"];
+        $userPreferenceList = json_encode($userPreferenceList, JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES);
+        
         $result = UtilityDB::saveUserPreference($userEmail, $userPreferenceList);
 
         if($result===false)return json_encode(array("response"=>0, "reason"=>MSG_OPERATION_FAILED));
@@ -198,9 +190,7 @@ class WebService {
         if($userEmail===false)
             return json_encode(array("response"=>0, "reason"=>MSG_INVALID_REQUEST_FORMAT));
 
-        $result = UtilityDB::loadUserPreference($userEmail);
-        
-        return json_encode($result, JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES);
+        return UtilityDB::loadUserPreference($userEmail);
     }
     
     public static function getBook($request, $input)
@@ -251,6 +241,10 @@ class WebService {
         $details = UtilityDB::getNarratorDetails($narratorID);
         if($details===false)
             return json_encode(array("response"=>0, "reason"=>MSG_INVALID_INPUT));
+            
+        unset($details["ekhtlat"]);
+        unset($details["authors"]);
+
         
         $teachers = UtilityDB::getNarratorTeachers($narratorID);
         $students = UtilityDB::getNarratorStudents($narratorID);
@@ -297,6 +291,7 @@ class WebService {
         $finalHadith->firstid = UtilityDB::getFirstHadithID($bookID, $hadithID);
         $finalHadith->bookid = $bookID;
         $finalHadith->body = $hadith;
+        $finalHadith->hastafseer = UtilityDB::hasTafseer($bookID, $hadithID);
                 
         return json_encode($finalHadith, JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES);
     }
