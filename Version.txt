@@ -1,9 +1,13 @@
 Hadith API Web Service
 
+Test
+========================================
+Copy hadith files (Hadith.sqlite, HadithBody.sqlite, HadithFTS.sqlite) to [data] folder with read permission to www-data or all
+Comment the processCommand line and uncomment any test line, then execute
+
 Version 1.0
 ========================================
 Date: 1/6/2017
 By: Mohamed Sobh
 Notes:
 None
-
